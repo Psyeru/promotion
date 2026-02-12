@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>청소년 프로모션 기획안_v1.0</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+    :root {
+        --primary-color: #5f00ff;
+        --primary-dark: #4a00c7;
+        --bg-color: #f4f5f7;
+        --text-color: #333;
+        --gray-color: #666;
+        --border-color: #ddd;
+        --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Pretendard', -apple-system, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        line-height: 1.6;
+        display: flex;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+
+    /* 전체 컨테이너 (보고서 형태) */
+    .report-container {
+        width: 100%;
+        max-width: 900px;
+        background: var(--white);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    /* 보고서 헤더 */
+    .report-header {
+        background: #1a1a1a;
+        color: white;
+        padding: 24px 32px;
+        border-bottom: 4px solid var(--primary-color);
+    }
+    .report-header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .report-header p { font-size: 13px; opacity: 0.7; }
+
+    /* 메인 레이아웃 (좌: UI시안 / 우: 스펙명세) */
+    .report-body {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    /* 왼쪽: UI 시안 영역 */
+    .ui-preview-section {
+        flex: 1;
+        min-width: 320px;
+        background: #f8f9fa;
+        padding: 40px;
+        border-right: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .section-label {
+        align-self: flex-start;
+        font-size: 12px;
+        font-weight: 800;
+        color: #999;
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* 실제 이미지 뷰어 컨테이너 */
+    .real-img-container {
+        width: 100%;
+        max-width: 320px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .img-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .img-desc {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--primary-color);
+        text-align: left;
+    }
+
+    .real-img {
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border: 1px solid #eee;
+        display: block;
+    }
+
+    .img-error {
+        font-size: 12px;
+        color: #d32f2f;
+        background: #ffebeb;
+        padding: 20px;
+        text-align: center;
+        border-radius: 8px;
+        border: 1px dashed #d32f2f;
+        display: none;
+    }
+
+    /* 오른쪽: 스펙 명세 영역 */
+    .spec-section {
+        flex: 1.4;
+        min-width: 320px;
+        padding: 40px;
+    }
+
+    .spec-group { margin-bottom: 32px; }
+    .spec-title { 
+        font-size: 16px; font-weight: 700; 
+        border-left: 4px solid var(--primary-color); 
+        padding-left: 10px; margin-bottom: 16px;
+        color: #111;
+    }
+
+    /* 테이블 스타일 */
+    .spec-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+    .spec-table th, .spec-table td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+    }
+    .spec-table th {
+        width: 100px;
+        color: #555;
+        background: #fafafa;
+        font-weight: 600;
+    }
+    .spec-table td { color: #333; }
+    
+    .logic-list { list-style: none; padding: 0; margin: 0; }
+    .logic-list li { position: relative; padding-left: 14px; margin-bottom: 6px; }
+    .logic-list li::before { content: '•'; position: absolute; left: 0; color: var(--primary-color); font-weight: bold; }
+    .important { color: #d32f2f; font-weight: 600; }
+    .date-badge { 
+        background: #eee; padding: 2px 6px; 
+        border-radius: 4px; font-family: monospace; 
+    }
+
+    /* 미디어 쿼리 */
+    @media (max-width: 768px) {
+        .report-body { flex-direction: column; }
+        .ui-preview-section { border-right: none; border-bottom: 1px solid var(--border-color); }
+    }
+</style>
+</head>
+<body>
+
+<div class="report-container">
+    <header class="report-header">
+        <h1>2026 청소년 특별 프로모션 기획안</h1>
+        <p>작성일: 2026.02.12 | 작성자: 기획팀 | 문서유형: UI/UX 및 정책 정의서</p>
+    </header>
+
+    <div class="report-body">
+        
+        <section class="ui-preview-section">
+            <span class="section-label">Frontend UI Preview</span>
+            
+            <!-- 변경된 실제 이미지 영역 -->
+            <div class="real-img-container">
+                <div class="img-wrapper">
+                    <span class="img-desc">1. 메인 팝업 UI</span>
+                    <img src="image_efee1f.png" alt="메인 팝업" class="real-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="img-error">같은 폴더에 'image_efee1f.png' 파일이 없습니다.</div>
+                </div>
+
+                <div class="img-wrapper">
+                    <span class="img-desc">2. 멤버십 상세 UI</span>
+                    <img src="image_efee36.png" alt="상세 페이지" class="real-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="img-error">같은 폴더에 'image_efee36.png' 파일이 없습니다.</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="spec-section">
+            <span class="section-label">Policy Specification</span>
+
+            <div class="spec-group">
+                <h3 class="spec-title">1. 프로모션 개요</h3>
+                <table class="spec-table">
+                    <tr>
+                        <th>이벤트명</th>
+                        <td>새학기 응원 청소년 프로모션</td>
+                    </tr>
+                    <tr>
+                        <th>진행 기간</th>
+                        <td><span class="date-badge">02.12</span> ~ <span class="date-badge">03.03</span> (20일간)</td>
+                    </tr>
+                    <tr>
+                        <th>타겟 대상</th>
+                        <td>2008년 ~ 2012년생 (만 14세~18세 기준)</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="spec-group">
+                <h3 class="spec-title">2. 진입 및 결제 조건 (Check Logic)</h3>
+                <table class="spec-table">
+                    <tr>
+                        <th>자격 요건</th>
+                        <td>
+                            <ul class="logic-list">
+                                <li>생년월일 기준 2008~2012년생</li>
+                                <li>현재 비플러스 상태 (무료 이용자 제외)</li>
+                                <li><span class="important">1월 5일 이후</span> 멤버십 결제 이력이 없을 것</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>중복 체크</th>
+                        <td>
+                            <ul class="logic-list">
+                                <li>명의(CI/DI) 기반 전수 조사</li>
+                                <li>동일 명의 타 계정에 플러스 이용권 존재 시 <span class="important">대상 제외</span></li>
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="spec-group">
+                <h3 class="spec-title">3. 유지 및 해지 정책 (Retention)</h3>
+                <table class="spec-table">
+                    <tr>
+                        <th>가격 정책</th>
+                        <td>
+                            가입 시점부터 성인이 될 때까지 <strong>월 8,900원</strong> 고정<br>
+                            <span style="font-size:11px; color:#888;">* 16,900원 대비 약 47% 할인</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>제외/종료</th>
+                        <td>
+                            <ul class="logic-list">
+                                <li>해지 혹은 환불 시 재가입 불가 (일반요금 적용)</li>
+                                <li><strong>만 19세 도래 시 자동 종료</strong><br>(예: 2008년생은 2027.01.01 부로 혜택 종료)</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+        </section>
+    </div>
+</div>
+
+</body>
+</html>
