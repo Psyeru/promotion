@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>청소년 프로모션 기획안_v1.0</title>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<!-- 엑셀 파싱 라이브러리 복구 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- 그래프 렌더링을 위한 Chart.js (엑셀 파싱 라이브러리는 불필요하여 제거) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
     :root {
         --primary-color: #5f00ff;
@@ -27,17 +31,15 @@
         padding: 40px 20px;
     }
 
-    /* 전체 컨테이너 (보고서 형태) */
     .report-container {
         width: 100%;
-        max-width: 900px;
+        max-width: 1000px;
         background: var(--white);
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         overflow: hidden;
     }
 
-    /* 보고서 헤더 */
     .report-header {
         background: #1a1a1a;
         color: white;
@@ -47,11 +49,37 @@
     .report-header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
     .report-header p { font-size: 13px; opacity: 0.7; }
 
-    /* 메인 레이아웃 (좌: UI시안 / 우: 스펙명세) */
-    .report-body {
+    /* 탭 메뉴 스타일 */
+    .tab-menu {
         display: flex;
-        flex-wrap: wrap;
+        background: #f8f9fa;
+        border-bottom: 1px solid var(--border-color);
     }
+    .tab-btn {
+        flex: 1;
+        padding: 16px;
+        border: none;
+        background: none;
+        font-size: 15px;
+        font-weight: 700;
+        color: #888;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+    }
+    .tab-btn:hover { background: #f0f2f5; }
+    .tab-btn.active {
+        color: var(--primary-color);
+        border-bottom: 3px solid var(--primary-color);
+        background: var(--white);
+    }
+
+    /* 탭 컨텐츠 관리 */
+    .tab-content { display: none; }
+    /* 개요 탭은 flex 유지 */
+    #tab-overview.active { display: flex; flex-wrap: wrap; }
+    /* 데이터 탭은 block 유지 */
+    #tab-data.active { display: block; padding: 40px; }
 
     /* 왼쪽: UI 시안 영역 */
     .ui-preview-section {
@@ -76,7 +104,6 @@
         letter-spacing: 1px;
     }
 
-    /* 실제 이미지 뷰어 컨테이너 */
     .real-img-container {
         width: 100%;
         max-width: 320px;
@@ -85,85 +112,62 @@
         gap: 30px;
     }
 
-    .img-wrapper {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .img-desc {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--primary-color);
-        text-align: left;
-    }
-
+    .img-wrapper { display: flex; flex-direction: column; gap: 8px; }
+    .img-desc { font-size: 12px; font-weight: 600; color: var(--primary-color); text-align: left; }
     .real-img {
-        width: 100%;
-        height: auto;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        border: 1px solid #eee;
-        display: block;
+        width: 100%; height: auto; border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #eee; display: block;
     }
-
     .img-error {
-        font-size: 12px;
-        color: #d32f2f;
-        background: #ffebeb;
-        padding: 20px;
-        text-align: center;
-        border-radius: 8px;
-        border: 1px dashed #d32f2f;
-        display: none;
+        font-size: 12px; color: #d32f2f; background: #ffebeb; padding: 20px;
+        text-align: center; border-radius: 8px; border: 1px dashed #d32f2f; display: none;
     }
 
     /* 오른쪽: 스펙 명세 영역 */
-    .spec-section {
-        flex: 1.4;
-        min-width: 320px;
-        padding: 40px;
-    }
-
+    .spec-section { flex: 1.4; min-width: 320px; padding: 40px; }
     .spec-group { margin-bottom: 32px; }
     .spec-title { 
-        font-size: 16px; font-weight: 700; 
-        border-left: 4px solid var(--primary-color); 
-        padding-left: 10px; margin-bottom: 16px;
-        color: #111;
+        font-size: 16px; font-weight: 700; border-left: 4px solid var(--primary-color); 
+        padding-left: 10px; margin-bottom: 16px; color: #111;
     }
 
-    /* 테이블 스타일 */
-    .spec-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-    }
-    .spec-table th, .spec-table td {
-        padding: 12px;
-        border-bottom: 1px solid #eee;
-        text-align: left;
-    }
-    .spec-table th {
-        width: 100px;
-        color: #555;
-        background: #fafafa;
-        font-weight: 600;
-    }
+    .spec-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .spec-table th, .spec-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+    .spec-table th { width: 100px; color: #555; background: #fafafa; font-weight: 600; }
     .spec-table td { color: #333; }
     
     .logic-list { list-style: none; padding: 0; margin: 0; }
     .logic-list li { position: relative; padding-left: 14px; margin-bottom: 6px; }
     .logic-list li::before { content: '•'; position: absolute; left: 0; color: var(--primary-color); font-weight: bold; }
     .important { color: #d32f2f; font-weight: 600; }
-    .date-badge { 
-        background: #eee; padding: 2px 6px; 
-        border-radius: 4px; font-family: monospace; 
+    .date-badge { background: #eee; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+
+    /* 데이터 탭 스타일 */
+    .chart-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto 30px auto;
+        padding: 20px;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
-    /* 미디어 쿼리 */
+    .data-grid { width: 100%; border-collapse: collapse; font-size: 12px; border: 1px solid #ccc; }
+    .data-grid th, .data-grid td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; }
+    .data-grid th { background-color: #f0f2f5; font-weight: 700; color: #444; text-align: center; }
+    .data-grid td { background-color: #fff; }
+    .data-grid .center { text-align: center; }
+
+    /* 파일 업로드 UI 스타일 복구 */
+    .file-upload-box {
+        background: #f8f9fa; border: 1px dashed #ccc; padding: 20px;
+        border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;
+    }
+
     @media (max-width: 768px) {
-        .report-body { flex-direction: column; }
+        #tab-overview.active { flex-direction: column; }
         .ui-preview-section { border-right: none; border-bottom: 1px solid var(--border-color); }
     }
 </style>
@@ -176,19 +180,22 @@
         <p>작성일: 2026.02.12 | 작성자: 기획팀 | 문서유형: UI/UX 및 정책 정의서</p>
     </header>
 
-    <div class="report-body">
-        
+    <!-- 탭 메뉴 -->
+    <div class="tab-menu">
+        <button class="tab-btn active" onclick="switchTab('overview')">기획 개요</button>
+        <button class="tab-btn" onclick="switchTab('data')">결과 데이터</button>
+    </div>
+
+    <!-- 탭 1: 개요 -->
+    <div id="tab-overview" class="tab-content active">
         <section class="ui-preview-section">
             <span class="section-label">Frontend UI Preview</span>
-            
-            <!-- 변경된 실제 이미지 영역 -->
             <div class="real-img-container">
                 <div class="img-wrapper">
                     <span class="img-desc">1. 메인 팝업 UI</span>
                     <img src="image_efee1f.png" alt="메인 팝업" class="real-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                     <div class="img-error">같은 폴더에 'image_efee1f.png' 파일이 없습니다.</div>
                 </div>
-
                 <div class="img-wrapper">
                     <span class="img-desc">2. 멤버십 상세 UI</span>
                     <img src="image_efee36.png" alt="상세 페이지" class="real-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -203,18 +210,9 @@
             <div class="spec-group">
                 <h3 class="spec-title">1. 프로모션 개요</h3>
                 <table class="spec-table">
-                    <tr>
-                        <th>이벤트명</th>
-                        <td>새학기 응원 청소년 프로모션</td>
-                    </tr>
-                    <tr>
-                        <th>진행 기간</th>
-                        <td><span class="date-badge">02.12</span> ~ <span class="date-badge">03.03</span> (20일간)</td>
-                    </tr>
-                    <tr>
-                        <th>타겟 대상</th>
-                        <td>2008년 ~ 2012년생 (만 14세~18세 기준)</td>
-                    </tr>
+                    <tr><th>이벤트명</th><td>새학기 응원 청소년 프로모션</td></tr>
+                    <tr><th>진행 기간</th><td><span class="date-badge">02.12</span> ~ <span class="date-badge">03.03</span> (20일간)</td></tr>
+                    <tr><th>타겟 대상</th><td>2008년 ~ 2012년생 (만 14세~18세 기준)</td></tr>
                 </table>
             </div>
 
@@ -264,10 +262,271 @@
                     </tr>
                 </table>
             </div>
-
         </section>
+    </div>
+
+    <!-- 탭 2: 결과 데이터 (고정 데이터) -->
+    <div id="tab-data" class="tab-content">
+        <h3 class="spec-title" style="margin-bottom: 10px;">프로모션 성과 대시보드</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 20px;">업데이트 기준: 2026.02.12</p>
+
+        <!-- 파일 업로드 영역 복구 -->
+        <div class="file-upload-box">
+            <label for="excelUpload" style="font-size:14px; font-weight:700; color:var(--primary-color);">데이터 파일 업데이트:</label>
+            <input type="file" id="excelUpload" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+        </div>
+
+        <!-- 자동 렌더링 그래프 영역 -->
+        <div class="chart-container" id="chartWrapper">
+            <canvas id="resultChart"></canvas>
+        </div>
+
+        <!-- 데이터 표 영역 -->
+        <div id="dynamicTableContainer" style="overflow-x:auto;">
+            <table class="data-grid" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>날짜</th>
+                        <th>총 대상자</th>
+                        <th>결제자</th>
+                        <th>남은 결제자</th>
+                        <th>결제율</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="center">2026-02-09</td><td class="center">49,327</td><td class="center">2</td><td class="center">49,325</td><td class="center">0.00%</td>
+                    </tr>
+                    <tr>
+                        <td class="center">2026-02-10</td><td class="center">49,331</td><td class="center">6</td><td class="center">49,325</td><td class="center">0.01%</td>
+                    </tr>
+                    <tr>
+                        <td class="center">2026-02-11</td><td class="center">49,326</td><td class="center">1</td><td class="center">49,325</td><td class="center">0.00%</td>
+                    </tr>
+                    <tr>
+                        <td class="center">2026-02-12</td><td class="center">49,351</td><td class="center">26</td><td class="center">49,325</td><td class="center">0.05%</td>
+                    </tr>
+                    <tr style="background-color: #f8f9fa; font-weight: bold;">
+                        <td class="center">합계</td><td class="center">197,335</td><td class="center">35</td><td class="center">49,325</td><td class="center">0.02%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 이전 프로모션 비교 영역 -->
+        <div class="spec-group" style="margin-top: 40px; border-top: 1px dashed #ccc; padding-top: 30px;">
+            <h3 class="spec-title" style="margin-bottom: 20px;">이전 프로모션 성과 비교 (Reference)</h3>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                
+                <!-- 6900원 프로모션 데이터 -->
+                <div style="flex: 1; min-width: 250px; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                    <h4 style="font-size: 14px; font-weight: 700; color: #111; margin-bottom: 12px;">6,900원 프로모션 (25.07)</h4>
+                    <table class="data-grid">
+                        <tr><th style="width: 40%;">총 인원 수</th><td class="center">46,467</td></tr>
+                        <tr><th>결제자</th><td class="center">2,761</td></tr>
+                        <tr><th>결제율</th><td class="center" style="color: var(--primary-color); font-weight: bold;">5.9%</td></tr>
+                        <tr><th>해지율</th><td class="center" style="color: #d32f2f; font-weight: bold;">16.0%</td></tr>
+                    </table>
+                </div>
+
+                <!-- 12900원 프로모션 데이터 -->
+                <div style="flex: 1; min-width: 250px; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                    <h4 style="font-size: 14px; font-weight: 700; color: #111; margin-bottom: 12px;">12,900원 프로모션 (25.08)</h4>
+                    <table class="data-grid">
+                        <tr><th style="width: 40%;">총 인원 수</th><td class="center">48,655</td></tr>
+                        <tr><th>결제자</th><td class="center">404</td></tr>
+                        <tr><th>결제율</th><td class="center" style="color: var(--primary-color); font-weight: bold;">0.8%</td></tr>
+                        <tr><th>해지율</th><td class="center" style="color: #d32f2f; font-weight: bold;">26.0%</td></tr>
+                    </table>
+                </div>
+
+            </div>
+            <p style="font-size: 12px; color: #666; margin-top: 12px;">* 이전 프로모션(6,900원 / 12,900원) 데이터 대비 이번 8,900원 프로모션의 달성 추이를 분석하기 위한 지표입니다.</p>
+        </div>
     </div>
 </div>
 
+<script>
+    // 탭 전환 로직
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById('tab-' + tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+        
+        // 데이터 탭으로 이동할 때 그래프 렌더링 (애니메이션 정상 작동 위해)
+        if(tabId === 'data' && !myChart) {
+            initChart();
+        }
+    }
+
+    let myChart = null; // Chart 인스턴스
+
+    // 엑셀 업로드 및 동적 렌더링 로직 복구
+    document.getElementById('excelUpload').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var data = new Uint8Array(e.target.result);
+            var workbook = XLSX.read(data, {type: 'array'});
+            var firstSheetName = workbook.SheetNames[0];
+            var worksheet = workbook.Sheets[firstSheetName];
+            
+            var jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+            
+            renderTable(jsonData);
+            renderChart(jsonData);
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    function renderTable(data) {
+        if (!data || data.length === 0) return;
+
+        var tableHtml = '<table class="data-grid">';
+        tableHtml += '<thead><tr>';
+        var headers = data[0];
+        for (var i = 0; i < headers.length; i++) {
+            tableHtml += '<th>' + (headers[i] || '') + '</th>';
+        }
+        tableHtml += '</tr></thead><tbody>';
+
+        for (var i = 1; i < data.length; i++) {
+            var row = data[i];
+            if (row.length === 0) continue; 
+            
+            var isTotal = String(row[0]).includes('합계');
+            tableHtml += isTotal ? '<tr style="background-color: #f8f9fa; font-weight: bold;">' : '<tr>';
+            
+            for (var j = 0; j < headers.length; j++) {
+                var cellData = row[j] !== undefined ? row[j] : '';
+                if(typeof cellData === 'number' && !Number.isInteger(cellData) && headers[j] && headers[j].includes('율')) {
+                     cellData = (cellData * 100).toFixed(2) + '%';
+                }
+                tableHtml += '<td class="center">' + cellData + '</td>';
+            }
+            tableHtml += '</tr>';
+        }
+        tableHtml += '</tbody></table>';
+
+        document.getElementById('dynamicTableContainer').innerHTML = tableHtml;
+    }
+
+    function renderChart(data) {
+        if (!data || data.length < 2) return;
+        
+        const ctx = document.getElementById('resultChart').getContext('2d');
+        if (myChart) myChart.destroy(); // 기존 차트 제거
+
+        let headers = data[0];
+        let dateIdx = 0;
+        let buyerIdx = headers.indexOf('결제자') > -1 ? headers.indexOf('결제자') : 2;
+        let rateIdx = headers.indexOf('결제율') > -1 ? headers.indexOf('결제율') : 4;
+
+        let labels = [];
+        let buyerData = [];
+        let rateData = [];
+
+        for (let i = 1; i < data.length; i++) {
+            if (!data[i] || data[i].length === 0 || String(data[i][0]).includes('합계')) continue;
+            
+            let rawDate = data[i][dateIdx];
+            let labelText = typeof rawDate === 'number' ? 'Day ' + i : String(rawDate);
+            
+            labels.push(labelText);
+            buyerData.push(Number(data[i][buyerIdx]) || 0);
+
+            let rateVal = data[i][rateIdx];
+            if(typeof rateVal === 'string') {
+                rateVal = rateVal.replace('%', '');
+            } else if (typeof rateVal === 'number' && rateVal < 1) {
+                rateVal = rateVal * 100;
+            }
+            rateData.push(Number(rateVal) || 0);
+        }
+
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        type: 'bar', label: '결제자 수 (명)', data: buyerData,
+                        backgroundColor: 'rgba(95, 0, 255, 0.7)', borderColor: '#5f00ff', borderWidth: 1, yAxisID: 'y'
+                    },
+                    {
+                        type: 'line', label: '결제율 (%)', data: rateData,
+                        borderColor: '#ff4d4f', backgroundColor: '#ff4d4f', borderWidth: 2, tension: 0.1, yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { type: 'linear', display: true, position: 'left', title: { display: true, text: '결제자 수 (명)', font: {size: 12} } },
+                    y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: '결제율 (%)', font: {size: 12} }, grid: { drawOnChartArea: false } }
+                }
+            }
+        });
+    }
+
+    // 고정된 데이터로 차트 자동 생성 함수
+    function initChart() {
+        const ctx = document.getElementById('resultChart').getContext('2d');
+        
+        const labels = ['2026-02-09', '2026-02-10', '2026-02-11', '2026-02-12'];
+        const buyerData = [2, 6, 1, 26];
+        const rateData = [0.00, 0.01, 0.00, 0.05];
+
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: '결제자 수 (명)',
+                        data: buyerData,
+                        backgroundColor: 'rgba(95, 0, 255, 0.7)',
+                        borderColor: '#5f00ff',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        type: 'line',
+                        label: '결제율 (%)',
+                        data: rateData,
+                        borderColor: '#ff4d4f',
+                        backgroundColor: '#ff4d4f',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { 
+                        type: 'linear', display: true, position: 'left',
+                        title: { display: true, text: '결제자 수 (명)', font: {size: 12} }
+                    },
+                    y1: { 
+                        type: 'linear', display: true, position: 'right',
+                        title: { display: true, text: '결제율 (%)', font: {size: 12} },
+                        grid: { drawOnChartArea: false }
+                    }
+                }
+            }
+        });
+    }
+</script>
 </body>
 </html>
