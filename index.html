@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>청소년 프로모션 기획안_v1.1</title>
+<title>청소년 프로모션 기획안_v1.0</title>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <!-- 엑셀/CSV 파싱 라이브러리 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -143,9 +143,9 @@
     .chart-container {
         width: 100%;
         max-width: 800px;
-        height: 320px; /* 모바일에서 적절한 높이 고정 */
+        height: 320px; /* 모바일 차트 높이 고정 */
         margin: 0 auto 30px auto;
-        padding: 10px; /* 패딩 축소 */
+        padding: 10px;
         background: #fff;
         border: 1px solid #eee;
         border-radius: 12px;
@@ -155,7 +155,7 @@
     /* 표 스타일 개선: 모바일 가로 스크롤 적용 */
     #dynamicTableContainer {
         overflow-x: auto;
-        -webkit-overflow-scrolling: touch; /* 부드러운 스크롤 */
+        -webkit-overflow-scrolling: touch;
         border: 1px solid #eee;
         border-radius: 8px;
     }
@@ -164,7 +164,7 @@
         width: 100%; 
         border-collapse: collapse; 
         font-size: 12px; 
-        white-space: nowrap; /* 줄바꿈 방지 -> 가로 스크롤 유도 */
+        white-space: nowrap; /* 줄바꿈 방지 */
     }
     
     .data-grid th, .data-grid td { 
@@ -178,7 +178,6 @@
         font-weight: 700; 
         color: #444; 
     }
-    
     .data-grid td { background-color: #fff; }
 
     /* 데이터 소스 상태 표시 */
@@ -205,7 +204,6 @@
         .ui-preview-section { border-right: none; border-bottom: 1px solid var(--border-color); padding: 30px 20px; }
         #tab-data.active { padding: 20px; }
         
-        /* 모바일에서 폰트 사이즈 조정 */
         .chart-container { height: 280px; padding: 5px; }
         .data-grid { font-size: 11px; }
     }
@@ -323,7 +321,7 @@
             <canvas id="resultChart"></canvas>
         </div>
 
-        <!-- 데이터 표 영역 (가로 스크롤 적용) -->
+        <!-- 데이터 표 영역 (가로 스크롤) -->
         <div id="dynamicTableContainer">
             <table class="data-grid" id="dataTable">
                 <thead>
@@ -369,8 +367,8 @@
 </div>
 
 <script>
-    // ▼▼▼ 아래 따옴표 안에 구글 스프레드시트 CSV 링크를 꼭 넣어주세요! ▼▼▼
-    const GOOGLESHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFdyOe8ZFKG99p8kHBpvd1YyysrGLp7scIX6x9D9DyeihaXpkB_Ovx2nFuL9NCBH_jGNVaaFDIjrnE/pub?gid=0&single=true&output=csv"; 
+    // ▼▼▼ 아래 따옴표 안에 구글 스프레드시트 CSV 링크를 넣어주세요 ▼▼▼
+    const GOOGLESHEET_URL = ""; 
 
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -386,7 +384,6 @@
 
     let myChart = null;
 
-    // 구글 시트 데이터 로드 함수
     async function loadGoogleSheetData() {
         const statusMsg = document.getElementById('statusMsg');
         
@@ -402,7 +399,6 @@
             if (!response.ok) throw new Error("네트워크 응답 실패");
             
             const csvText = await response.text();
-            
             const workbook = XLSX.read(csvText, {type: 'string', cellDates: true});
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
@@ -417,6 +413,15 @@
             statusMsg.innerHTML = "<span>❌ 데이터를 불러오는 데 실패했습니다. 링크를 확인해주세요. (웹에 게시 -> CSV 선택 필수)</span>";
             statusMsg.classList.add('error');
         }
+    }
+
+    // 날짜 파싱 헬퍼 함수 (안전장치)
+    function parseDateSafe(cellData) {
+        if (cellData instanceof Date) return cellData;
+        if (typeof cellData === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(cellData)) {
+            return new Date(cellData);
+        }
+        return null;
     }
 
     function renderTable(data) {
@@ -440,10 +445,11 @@
             for (var j = 0; j < headers.length; j++) {
                 var cellData = row[j] !== undefined ? row[j] : '';
                 
-                // 표 날짜 포맷팅: "2월 8일" 형태로 변경
-                if (cellData instanceof Date) {
-                    var mm = cellData.getUTCMonth() + 1;
-                    var dd = cellData.getUTCDate();
+                // 날짜 확인 및 변환 (2월 13일)
+                var dateObj = parseDateSafe(cellData);
+                if (dateObj) {
+                    var mm = dateObj.getUTCMonth() + 1;
+                    var dd = dateObj.getUTCDate();
                     cellData = `${mm}월 ${dd}일`;
                 } else if(typeof cellData === 'number' && !Number.isInteger(cellData) && headers[j] && headers[j].includes('율')) {
                      cellData = (cellData * 100).toFixed(2) + '%';
@@ -477,10 +483,11 @@
             
             let rawDate = data[i][dateIdx];
             
-            // 차트 라벨 날짜 포맷팅: "2.9" 형태로 짧게 변경 (모바일 공간 확보)
-            if (rawDate instanceof Date) {
-                 var mm = rawDate.getUTCMonth() + 1;
-                 var dd = rawDate.getUTCDate();
+            // 날짜 확인 및 변환 (2.13)
+            var dateObj = parseDateSafe(rawDate);
+            if (dateObj) {
+                 var mm = dateObj.getUTCMonth() + 1;
+                 var dd = dateObj.getUTCDate();
                  labels.push(`${mm}.${dd}`);
             } else {
                  labels.push(rawDate);
@@ -517,15 +524,10 @@
                 maintainAspectRatio: false, 
                 interaction: { mode: 'index', intersect: false },
                 plugins: {
-                    legend: {
-                        labels: { boxWidth: 12, font: { size: 11 } } // 모바일용 범례 크기 조정
-                    }
+                    legend: { labels: { boxWidth: 12, font: { size: 11 } } }
                 },
                 scales: {
-                    x: { 
-                        grid: { display: false },
-                        ticks: { font: { size: 11 } }
-                    },
+                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
                     y: { 
                         type: 'linear', display: true, position: 'left', 
                         title: { display: true, text: '결제자 수', font: {size: 11} },
@@ -542,7 +544,6 @@
         });
     }
 
-    // URL 없을 때 보여줄 기본 샘플 데이터
     function initSampleData() {
         const labels = ['2.9', '2.10', '2.11', '2.12'];
         const buyerData = [2, 6, 1, 26];
@@ -567,7 +568,6 @@
             }
         });
 
-        // 테이블 샘플 렌더링
         let sampleData = [
             ['날짜', '총 대상자', '결제자', '남은 결제자', '결제율'],
             ['2월 9일', 49327, 2, 49325, 0.00],
