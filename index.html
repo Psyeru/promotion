@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>청소년 프로모션 기획안_v1.1</title>
+<title>청소년 프로모션 기획안_v1.0</title>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-<!-- 엑셀 파싱 라이브러리 -->
+<!-- 엑셀/CSV 파싱 라이브러리 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <!-- 그래프 렌더링을 위한 Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -74,14 +74,11 @@
         background: var(--white);
     }
 
-    /* 탭 컨텐츠 관리 */
     .tab-content { display: none; }
-    /* 개요 탭은 flex 유지 */
     #tab-overview.active { display: flex; flex-wrap: wrap; }
-    /* 데이터 탭은 block 유지 */
     #tab-data.active { display: block; padding: 40px; }
 
-    /* 왼쪽: UI 시안 영역 */
+    /* UI 시안 영역 */
     .ui-preview-section {
         flex: 1;
         min-width: 320px;
@@ -123,7 +120,7 @@
         text-align: center; border-radius: 8px; border: 1px dashed #d32f2f; display: none;
     }
 
-    /* 오른쪽: 스펙 명세 영역 */
+    /* 스펙 명세 영역 */
     .spec-section { flex: 1.4; min-width: 320px; padding: 40px; }
     .spec-group { margin-bottom: 32px; }
     .spec-title { 
@@ -160,10 +157,21 @@
     .data-grid td { background-color: #fff; }
     .data-grid .center { text-align: center; }
 
-    /* 파일 업로드 UI 스타일 */
-    .file-upload-box {
-        background: #f8f9fa; border: 1px dashed #ccc; padding: 20px;
-        border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;
+    /* 데이터 소스 상태 표시 */
+    .data-source-status {
+        background: #e8f0fe;
+        color: #1967d2;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .data-source-status.error {
+        background: #ffebeb;
+        color: #d32f2f;
     }
 
     @media (max-width: 768px) {
@@ -180,13 +188,12 @@
         <p>작성일: 2026.02.12 | 작성자: 기획팀 | 문서유형: UI/UX 및 정책 정의서</p>
     </header>
 
-    <!-- 탭 메뉴 -->
     <div class="tab-menu">
         <button class="tab-btn active" onclick="switchTab('overview')">기획 개요</button>
         <button class="tab-btn" onclick="switchTab('data')">결과 데이터</button>
     </div>
 
-    <!-- 탭 1: 개요 -->
+    <!-- 개요 탭 -->
     <div id="tab-overview" class="tab-content active">
         <section class="ui-preview-section">
             <span class="section-label">Frontend UI Preview</span>
@@ -201,7 +208,6 @@
                     <img src="image_efee36.png" alt="상세 페이지" class="real-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                     <div class="img-error">같은 폴더에 'image_efee36.png' 파일이 없습니다.</div>
                 </div>
-                <!-- ▼▼ 새로 추가된 선물함 UI 영역 (파일명: image_gift.png) ▼▼ -->
                 <div class="img-wrapper">
                     <span class="img-desc">3. 선물함 UI</span>
                     <img src="image_gift.png" alt="선물함 페이지" class="real-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -271,15 +277,14 @@
         </section>
     </div>
 
-    <!-- 탭 2: 결과 데이터 (고정 데이터) -->
+    <!-- 데이터 탭 -->
     <div id="tab-data" class="tab-content">
         <h3 class="spec-title" style="margin-bottom: 10px;">프로모션 성과 대시보드</h3>
-        <p style="font-size: 13px; color: #666; margin-bottom: 20px;">업데이트 기준: 2026.02.12</p>
+        <p style="font-size: 13px; color: #666; margin-bottom: 20px;">구글 스프레드시트 연동 데이터입니다.</p>
 
-        <!-- 파일 업로드 영역 -->
-        <div class="file-upload-box">
-            <label for="excelUpload" style="font-size:14px; font-weight:700; color:var(--primary-color);">데이터 파일 업데이트:</label>
-            <input type="file" id="excelUpload" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+        <!-- 데이터 상태 표시 -->
+        <div id="statusMsg" class="data-source-status">
+            <span>🔄 구글 시트에서 데이터를 불러오는 중...</span>
         </div>
 
         <!-- 자동 렌더링 그래프 영역 -->
@@ -300,21 +305,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="center">2026-02-09</td><td class="center">49,327</td><td class="center">2</td><td class="center">49,325</td><td class="center">0.00%</td>
-                    </tr>
-                    <tr>
-                        <td class="center">2026-02-10</td><td class="center">49,331</td><td class="center">6</td><td class="center">49,325</td><td class="center">0.01%</td>
-                    </tr>
-                    <tr>
-                        <td class="center">2026-02-11</td><td class="center">49,326</td><td class="center">1</td><td class="center">49,325</td><td class="center">0.00%</td>
-                    </tr>
-                    <tr>
-                        <td class="center">2026-02-12</td><td class="center">49,351</td><td class="center">26</td><td class="center">49,325</td><td class="center">0.05%</td>
-                    </tr>
-                    <tr style="background-color: #f8f9fa; font-weight: bold;">
-                        <td class="center">합계</td><td class="center">49,360</td><td class="center">35</td><td class="center">49,325</td><td class="center">0.07%</td>
-                    </tr>
+                    <!-- 데이터 로드 전 기본 빈 화면 -->
                 </tbody>
             </table>
         </div>
@@ -323,8 +314,6 @@
         <div class="spec-group" style="margin-top: 40px; border-top: 1px dashed #ccc; padding-top: 30px;">
             <h3 class="spec-title" style="margin-bottom: 20px;">이전 프로모션 성과 비교 (Reference)</h3>
             <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                
-                <!-- 6900원 프로모션 데이터 -->
                 <div style="flex: 1; min-width: 250px; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
                     <h4 style="font-size: 14px; font-weight: 700; color: #111; margin-bottom: 12px;">6,900원 프로모션 (25.07)</h4>
                     <table class="data-grid">
@@ -334,8 +323,6 @@
                         <tr><th>해지율</th><td class="center" style="color: #d32f2f; font-weight: bold;">16.0%</td></tr>
                     </table>
                 </div>
-
-                <!-- 12900원 프로모션 데이터 -->
                 <div style="flex: 1; min-width: 250px; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
                     <h4 style="font-size: 14px; font-weight: 700; color: #111; margin-bottom: 12px;">12,900원 프로모션 (25.08)</h4>
                     <table class="data-grid">
@@ -345,15 +332,15 @@
                         <tr><th>해지율</th><td class="center" style="color: #d32f2f; font-weight: bold;">26.0%</td></tr>
                     </table>
                 </div>
-
             </div>
-            <p style="font-size: 12px; color: #666; margin-top: 12px;">* 이전 프로모션(6,900원 / 12,900원) 데이터 대비 이번 8,900원 프로모션의 달성 추이를 분석하기 위한 지표입니다.</p>
         </div>
     </div>
 </div>
 
 <script>
-    // 탭 전환 로직
+    // ▼▼▼ 아래 따옴표 안에 구글 스프레드시트 CSV 링크를 꼭 넣어주세요! ▼▼▼
+    const GOOGLESHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFdyOe8ZFKG99p8kHBpvd1YyysrGLp7scIX6x9D9DyeihaXpkB_Ovx2nFuL9NCBH_jGNVaaFDIjrnE/pub?gid=0&single=true&output=csv"; 
+
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -361,34 +348,46 @@
         document.getElementById('tab-' + tabId).classList.add('active');
         event.currentTarget.classList.add('active');
         
-        // 데이터 탭으로 이동할 때 그래프 렌더링 (애니메이션 정상 작동 위해)
         if(tabId === 'data' && !myChart) {
-            initChart();
+            loadGoogleSheetData();
         }
     }
 
-    let myChart = null; // Chart 인스턴스
+    let myChart = null;
 
-    // 엑셀 업로드 및 동적 렌더링 로직
-    document.getElementById('excelUpload').addEventListener('change', function(e) {
-        var file = e.target.files[0];
-        if (!file) return;
+    // 구글 시트 데이터 로드 함수
+    async function loadGoogleSheetData() {
+        const statusMsg = document.getElementById('statusMsg');
+        
+        if (!GOOGLESHEET_URL) {
+            statusMsg.innerHTML = "<span>⚠️ 구글 시트 URL이 설정되지 않았습니다. 코드 맨 아래에서 링크를 넣어주세요.</span>";
+            statusMsg.classList.add('error');
+            initSampleData(); // URL 없으면 샘플 표시
+            return;
+        }
 
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var data = new Uint8Array(e.target.result);
-            // 날짜를 일련번호 대신 Date 객체로 파싱하도록 옵션 추가
-            var workbook = XLSX.read(data, {type: 'array', cellDates: true});
-            var firstSheetName = workbook.SheetNames[0];
-            var worksheet = workbook.Sheets[firstSheetName];
+        try {
+            const response = await fetch(GOOGLESHEET_URL);
+            if (!response.ok) throw new Error("네트워크 응답 실패");
             
-            var jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+            const csvText = await response.text();
             
+            // cellDates: true 옵션 추가 (날짜를 Date 객체로 파싱)
+            const workbook = XLSX.read(csvText, {type: 'string', cellDates: true});
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+
             renderTable(jsonData);
             renderChart(jsonData);
-        };
-        reader.readAsArrayBuffer(file);
-    });
+            statusMsg.innerHTML = "<span>✅ 구글 스프레드시트 데이터가 성공적으로 로드되었습니다.</span>";
+            statusMsg.classList.remove('error');
+
+        } catch (error) {
+            console.error(error);
+            statusMsg.innerHTML = "<span>❌ 데이터를 불러오는 데 실패했습니다. 링크를 확인해주세요. (웹에 게시 -> CSV 선택 필수)</span>";
+            statusMsg.classList.add('error');
+        }
+    }
 
     function renderTable(data) {
         if (!data || data.length === 0) return;
@@ -410,13 +409,13 @@
             
             for (var j = 0; j < headers.length; j++) {
                 var cellData = row[j] !== undefined ? row[j] : '';
-
-                // 날짜 객체인 경우 YYYY-MM-DD 포맷으로 문자열 변환
+                
+                // 날짜 포맷팅 (YYYY-MM-DD)
                 if (cellData instanceof Date) {
                     var yyyy = cellData.getUTCFullYear();
                     var mm = String(cellData.getUTCMonth() + 1).padStart(2, '0');
                     var dd = String(cellData.getUTCDate()).padStart(2, '0');
-                    cellData = yyyy + '-' + mm + '-' + dd;
+                    cellData = `${yyyy}-${mm}-${dd}`;
                 } else if(typeof cellData === 'number' && !Number.isInteger(cellData) && headers[j] && headers[j].includes('율')) {
                      cellData = (cellData * 100).toFixed(2) + '%';
                 }
@@ -433,7 +432,7 @@
         if (!data || data.length < 2) return;
         
         const ctx = document.getElementById('resultChart').getContext('2d');
-        if (myChart) myChart.destroy(); // 기존 차트 제거
+        if (myChart) myChart.destroy(); 
 
         let headers = data[0];
         let dateIdx = 0;
@@ -448,19 +447,17 @@
             if (!data[i] || data[i].length === 0 || String(data[i][0]).includes('합계')) continue;
             
             let rawDate = data[i][dateIdx];
-            let labelText = '';
-
-            // 그래프 라벨을 위한 날짜 포맷 변환
+            
+            // 그래프 라벨 날짜 포맷팅
             if (rawDate instanceof Date) {
-                var yyyy = rawDate.getUTCFullYear();
-                var mm = String(rawDate.getUTCMonth() + 1).padStart(2, '0');
-                var dd = String(rawDate.getUTCDate()).padStart(2, '0');
-                labelText = yyyy + '-' + mm + '-' + dd;
+                 var yyyy = rawDate.getUTCFullYear();
+                 var mm = String(rawDate.getUTCMonth() + 1).padStart(2, '0');
+                 var dd = String(rawDate.getUTCDate()).padStart(2, '0');
+                 labels.push(`${yyyy}-${mm}-${dd}`);
             } else {
-                labelText = typeof rawDate === 'number' ? 'Day ' + i : String(rawDate);
+                 labels.push(rawDate);
             }
             
-            labels.push(labelText);
             buyerData.push(Number(data[i][buyerIdx]) || 0);
 
             let rateVal = data[i][rateIdx];
@@ -498,60 +495,42 @@
         });
     }
 
-    // 고정된 데이터로 차트 자동 생성 함수 (Hardcoded Data)
-    function initChart() {
-        const ctx = document.getElementById('resultChart').getContext('2d');
-        
+    // URL 없을 때 보여줄 기본 샘플 데이터
+    function initSampleData() {
         const labels = ['2026-02-09', '2026-02-10', '2026-02-11', '2026-02-12'];
         const buyerData = [2, 6, 1, 26];
         const rateData = [0.00, 0.01, 0.00, 0.05];
-
+        
+        const ctx = document.getElementById('resultChart').getContext('2d');
         myChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
-                    {
-                        type: 'bar',
-                        label: '결제자 수 (명)',
-                        data: buyerData,
-                        backgroundColor: 'rgba(95, 0, 255, 0.7)',
-                        borderColor: '#5f00ff',
-                        borderWidth: 1,
-                        yAxisID: 'y'
-                    },
-                    {
-                        type: 'line',
-                        label: '결제율 (%)',
-                        data: rateData,
-                        borderColor: '#ff4d4f',
-                        backgroundColor: '#ff4d4f',
-                        borderWidth: 2,
-                        tension: 0.1,
-                        yAxisID: 'y1'
-                    }
+                    { type: 'bar', label: '결제자 수 (명)', data: buyerData, backgroundColor: 'rgba(95, 0, 255, 0.7)', yAxisID: 'y' },
+                    { type: 'line', label: '결제율 (%)', data: rateData, borderColor: '#ff4d4f', yAxisID: 'y1' }
                 ]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
+                responsive: true, maintainAspectRatio: false,
                 scales: {
-                    x: { grid: { display: false } },
-                    y: { 
-                        type: 'linear', display: true, position: 'left',
-                        title: { display: true, text: '결제자 수 (명)', font: {size: 12} }
-                    },
-                    y1: { 
-                        type: 'linear', display: true, position: 'right',
-                        title: { display: true, text: '결제율 (%)', font: {size: 12} },
-                        grid: { drawOnChartArea: false }
-                    }
+                    y: { type: 'linear', display: true, position: 'left', title: { display: true, text: '결제자 수' } },
+                    y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false } }
                 }
             }
         });
+
+        // 테이블 샘플 렌더링
+        let sampleData = [
+            ['날짜', '총 대상자', '결제자', '남은 결제자', '결제율'],
+            ['2026-02-09', 49327, 2, 49325, 0.00],
+            ['2026-02-10', 49331, 6, 49325, 0.01],
+            ['2026-02-11', 49326, 1, 49325, 0.00],
+            ['2026-02-12', 49351, 26, 49325, 0.05],
+            ['합계', 49360, 35, 49325, 0.07]
+        ];
+        renderTable(sampleData);
     }
 </script>
 </body>
 </html>
-
