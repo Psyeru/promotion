@@ -367,8 +367,8 @@
 </div>
 
 <script>
-    // ▼▼▼ 아래 따옴표 안에 구글 스프레드시트 CSV 링크를 넣어주세요 ▼▼▼
-    const GOOGLESHEET_URL = ""; 
+    // ▼▼▼ 아래 따옴표 안에 구글 스프레드시트 CSV 링크가 들어갔습니다 ▼▼▼
+    const GOOGLESHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4yx3FnyZ4iQ1u5hAKgZowweDPe0LzCfWoD1foemOajbXsZUznGG4v2PwqLCwGAnX56Ali6F2Ertfv/pub?gid=0&single=true&output=csv"; 
 
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -415,7 +415,7 @@
         }
     }
 
-    // 날짜 파싱 헬퍼 함수 (안전장치)
+    // 날짜 파싱 헬퍼 함수
     function parseDateSafe(cellData) {
         if (cellData instanceof Date) return cellData;
         if (typeof cellData === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(cellData)) {
@@ -445,7 +445,7 @@
             for (var j = 0; j < headers.length; j++) {
                 var cellData = row[j] !== undefined ? row[j] : '';
                 
-                // 날짜 확인 및 변환 (2월 13일)
+                // 표 날짜 포맷팅: "2월 8일" 형태로 변경
                 var dateObj = parseDateSafe(cellData);
                 if (dateObj) {
                     var mm = dateObj.getUTCMonth() + 1;
@@ -483,7 +483,7 @@
             
             let rawDate = data[i][dateIdx];
             
-            // 날짜 확인 및 변환 (2.13)
+            // 차트 라벨 날짜 포맷팅: "2.9" 형태로 짧게 변경
             var dateObj = parseDateSafe(rawDate);
             if (dateObj) {
                  var mm = dateObj.getUTCMonth() + 1;
