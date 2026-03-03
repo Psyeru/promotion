@@ -10,13 +10,17 @@
 <!-- 그래프 렌더링을 위한 Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
+    /* 다크모드 색상 변수 설정 */
     :root {
-        --primary-color: #5f00ff;
-        --primary-dark: #4a00c7;
-        --bg-color: #f4f5f7;
-        --text-color: #333;
-        --gray-color: #666;
-        --border-color: #ddd;
+        --primary-color: #8b5cf6; /* 다크모드에 맞춰 채도를 높인 보라색 */
+        --primary-dark: #7c3aed;
+        --bg-color: #121212;      /* 전체 배경 (매우 어두움) */
+        --container-bg: #1e1e1e;  /* 컨테이너 배경 */
+        --card-bg: #2a2a2a;       /* 카드 및 내부 박스 배경 */
+        --text-color: #e5e7eb;    /* 기본 텍스트 색상 (밝은 회색) */
+        --text-muted: #9ca3af;    /* 보조 텍스트 색상 */
+        --border-color: #374151;  /* 테두리 색상 */
+        --table-header-bg: #374151; /* 테이블 헤더 색상 */
         --white: #ffffff;
     }
 
@@ -34,25 +38,25 @@
     .report-container {
         width: 100%;
         max-width: 1000px;
-        background: var(--white);
+        background: var(--container-bg);
         border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.5);
         overflow: hidden;
     }
 
     .report-header {
         background: #1a1a1a;
-        color: white;
+        color: var(--text-color);
         padding: 24px 32px;
-        border-bottom: 4px solid var(--primary-color);
+        border-bottom: 1px solid var(--border-color);
     }
-    .report-header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-    .report-header p { font-size: 13px; opacity: 0.7; }
+    .report-header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; color: #fff; }
+    .report-header p { font-size: 13px; color: var(--text-muted); }
 
     /* 탭 메뉴 스타일 */
     .tab-menu {
         display: flex;
-        background: #f8f9fa;
+        background: var(--card-bg);
         border-bottom: 1px solid var(--border-color);
     }
     .tab-btn {
@@ -62,16 +66,16 @@
         background: none;
         font-size: 15px;
         font-weight: 700;
-        color: #888;
+        color: var(--text-muted);
         cursor: pointer;
         border-bottom: 3px solid transparent;
         transition: all 0.2s;
     }
-    .tab-btn:hover { background: #f0f2f5; }
+    .tab-btn:hover { background: #333333; color: var(--white); }
     .tab-btn.active {
-        color: var(--primary-color);
-        border-bottom: 3px solid var(--primary-color);
-        background: var(--white);
+        color: var(--white);
+        border-bottom: 3px solid var(--white);
+        background: var(--container-bg);
     }
 
     .tab-content { display: none; }
@@ -82,7 +86,7 @@
     .ui-preview-section {
         flex: 1;
         min-width: 320px;
-        background: #f8f9fa;
+        background: var(--card-bg);
         padding: 40px;
         border-right: 1px solid var(--border-color);
         display: flex;
@@ -95,7 +99,7 @@
         align-self: flex-start;
         font-size: 12px;
         font-weight: 800;
-        color: #999;
+        color: var(--text-muted);
         margin-bottom: 16px;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -113,11 +117,11 @@
     .img-desc { font-size: 12px; font-weight: 600; color: var(--primary-color); text-align: left; }
     .real-img {
         width: 100%; height: auto; border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #eee; display: block;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid var(--border-color); display: block;
     }
     .img-error {
-        font-size: 12px; color: #d32f2f; background: #ffebeb; padding: 20px;
-        text-align: center; border-radius: 8px; border: 1px dashed #d32f2f; display: none;
+        font-size: 12px; color: #fca5a5; background: #7f1d1d; padding: 20px;
+        text-align: center; border-radius: 8px; border: 1px dashed #fca5a5; display: none;
     }
 
     /* 스펙 명세 영역 */
@@ -125,38 +129,37 @@
     .spec-group { margin-bottom: 32px; }
     .spec-title { 
         font-size: 16px; font-weight: 700; border-left: 4px solid var(--primary-color); 
-        padding-left: 10px; margin-bottom: 16px; color: #111;
+        padding-left: 10px; margin-bottom: 16px; color: #ffffff;
     }
 
     .spec-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .spec-table th, .spec-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-    .spec-table th { width: 100px; color: #555; background: #fafafa; font-weight: 600; }
-    .spec-table td { color: #333; }
+    .spec-table th, .spec-table td { padding: 12px; border-bottom: 1px solid var(--border-color); text-align: left; }
+    .spec-table th { width: 100px; color: #d1d5db; background: var(--table-header-bg); font-weight: 600; }
+    .spec-table td { color: var(--text-color); }
     
     .logic-list { list-style: none; padding: 0; margin: 0; }
     .logic-list li { position: relative; padding-left: 14px; margin-bottom: 6px; }
     .logic-list li::before { content: '•'; position: absolute; left: 0; color: var(--primary-color); font-weight: bold; }
-    .important { color: #d32f2f; font-weight: 600; }
-    .date-badge { background: #eee; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    .important { color: #f87171; font-weight: 600; }
+    .date-badge { background: #374151; color: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
 
     /* 데이터 탭 스타일 */
     .chart-container {
         width: 100%;
         max-width: 800px;
-        height: 320px; /* 모바일 차트 높이 고정 */
+        height: 320px;
         margin: 0 auto 30px auto;
         padding: 10px;
-        background: #fff;
-        border: 1px solid #eee;
+        background: var(--container-bg);
+        border: 1px solid var(--border-color);
         border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
 
-    /* 표 스타일 개선: 모바일 가로 스크롤 적용 */
     #dynamicTableContainer {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        border: 1px solid #eee;
+        border: 1px solid var(--border-color);
         border-radius: 8px;
     }
 
@@ -164,26 +167,26 @@
         width: 100%; 
         border-collapse: collapse; 
         font-size: 12px; 
-        white-space: nowrap; /* 줄바꿈 방지 */
+        white-space: nowrap; 
     }
     
     .data-grid th, .data-grid td { 
-        border: 1px solid #ddd; 
+        border: 1px solid var(--border-color); 
         padding: 10px 12px; 
         text-align: center; 
     }
     
     .data-grid th { 
-        background-color: #f0f2f5; 
+        background-color: var(--table-header-bg); 
         font-weight: 700; 
-        color: #444; 
+        color: #d1d5db; 
     }
-    .data-grid td { background-color: #fff; }
+    .data-grid td { background-color: var(--container-bg); color: var(--text-color); }
 
-    /* 데이터 소스 상태 표시 */
+    /* 데이터 소스 상태 표시 (다크모드 톤 조정) */
     .data-source-status {
-        background: #e8f0fe;
-        color: #1967d2;
+        background: #1e3a8a;
+        color: #bfdbfe;
         padding: 12px;
         border-radius: 8px;
         font-size: 13px;
@@ -193,8 +196,8 @@
         gap: 8px;
     }
     .data-source-status.error {
-        background: #ffebeb;
-        color: #d32f2f;
+        background: #7f1d1d;
+        color: #fecaca;
     }
 
     @media (max-width: 768px) {
@@ -289,7 +292,7 @@
                         <th>가격 정책</th>
                         <td>
                             가입 시점부터 성인이 될 때까지 <strong>월 8,900원</strong> 고정<br>
-                            <span style="font-size:11px; color:#888;">* 16,900원 대비 약 47% 할인</span>
+                            <span style="font-size:11px; color:var(--text-muted);">* 16,900원 대비 약 47% 할인</span>
                         </td>
                     </tr>
                     <tr>
@@ -309,7 +312,7 @@
     <!-- 데이터 탭 -->
     <div id="tab-data" class="tab-content">
         <h3 class="spec-title" style="margin-bottom: 10px;">프로모션 성과 대시보드</h3>
-        <p style="font-size: 13px; color: #666; margin-bottom: 20px;">구글 스프레드시트 연동 데이터입니다.</p>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">구글 스프레드시트 연동 데이터입니다.</p>
 
         <!-- 데이터 상태 표시 -->
         <div id="statusMsg" class="data-source-status">
@@ -340,35 +343,52 @@
         </div>
 
         <!-- 이전 프로모션 비교 영역 -->
-        <div class="spec-group" style="margin-top: 40px; border-top: 1px dashed #ccc; padding-top: 30px;">
+        <div class="spec-group" style="margin-top: 40px; border-top: 1px dashed var(--border-color); padding-top: 30px;">
             <h3 class="spec-title" style="margin-bottom: 20px;">이전 프로모션 성과 비교 (Reference)</h3>
             <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 250px; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
-                    <h4 style="font-size: 14px; font-weight: 700; color: #111; margin-bottom: 12px;">6,900원 프로모션 (25.07)</h4>
+                <div style="flex: 1; min-width: 250px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                    <h4 style="font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 12px;">6,900원 프로모션 (25.07)</h4>
                     <table class="data-grid">
                         <tr><th style="width: 40%;">총 인원 수</th><td class="center">46,467</td></tr>
                         <tr><th>결제자</th><td class="center">2,761</td></tr>
                         <tr><th>결제율</th><td class="center" style="color: var(--primary-color); font-weight: bold;">5.9%</td></tr>
-                        <tr><th>해지율</th><td class="center" style="color: #d32f2f; font-weight: bold;">16.0%</td></tr>
+                        <tr><th>해지율</th><td class="center" style="color: #f87171; font-weight: bold;">16.0%</td></tr>
                     </table>
                 </div>
-                <div style="flex: 1; min-width: 250px; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
-                    <h4 style="font-size: 14px; font-weight: 700; color: #111; margin-bottom: 12px;">12,900원 프로모션 (25.08)</h4>
+                <div style="flex: 1; min-width: 250px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                    <h4 style="font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 12px;">12,900원 프로모션 (25.08)</h4>
                     <table class="data-grid">
                         <tr><th style="width: 40%;">총 인원 수</th><td class="center">48,655</td></tr>
                         <tr><th>결제자</th><td class="center">404</td></tr>
                         <tr><th>결제율</th><td class="center" style="color: var(--primary-color); font-weight: bold;">0.8%</td></tr>
-                        <tr><th>해지율</th><td class="center" style="color: #d32f2f; font-weight: bold;">26.0%</td></tr>
+                        <tr><th>해지율</th><td class="center" style="color: #f87171; font-weight: bold;">26.0%</td></tr>
                     </table>
                 </div>
             </div>
         </div>
+
+        <!-- ▼▼▼ 새로 추가된 최종 코멘트 영역 ▼▼▼ -->
+        <div class="spec-group" style="margin-top: 40px; border-top: 1px dashed var(--border-color); padding-top: 30px;">
+            <h3 class="spec-title" style="margin-bottom: 20px;">최종 코멘트 및 향후 개선안</h3>
+            <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px;">
+                <p style="font-size: 14px; line-height: 1.6; color: var(--text-color);">
+                    청소년 요금제 대상자의 경우 <strong>휴면 계정(미접속 회원)의 비율이 매우 높아</strong> 초기 예상했던 결제율에 도달하지 못했습니다.<br><br>
+                    이러한 데이터 분석 결과를 토대로, 향후 신규 프로모션 기획 시에는 <strong>활성 유저 타겟팅 강화 및 휴면 해제를 선작업으로 진행하여</strong> 프로모션 효율을 업그레이드할 수 있도록 적극 참고하겠습니다.
+                </p>
+            </div>
+        </div>
+        <!-- ▲▲▲ 최종 코멘트 영역 끝 ▲▲▲ -->
+
     </div>
 </div>
 
 <script>
-    // ▼▼▼ 아래 따옴표 안에 구글 스프레드시트 CSV 링크가 들어갔습니다 ▼▼▼
-    const GOOGLESHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4yx3FnyZ4iQ1u5hAKgZowweDPe0LzCfWoD1foemOajbXsZUznGG4v2PwqLCwGAnX56Ali6F2Ertfv/pub?gid=0&single=true&output=csv"; 
+    // 다크모드 차트 전역 색상 설정
+    Chart.defaults.color = '#9ca3af';
+    Chart.defaults.borderColor = '#374151';
+
+    // ▼▼▼ 아래 따옴표 안에 구글 스프레드시트 CSV 링크를 넣어주세요 ▼▼▼
+    const GOOGLESHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFdyOe8ZFKG99p8kHBpvd1YyysrGLp7scIX6x9D9DyeihaXpkB_Ovx2nFuL9NCBH_jGNVaaFDIjrnE/pub?gid=0&single=true&output=csv"; 
 
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -440,7 +460,8 @@
             if (row.length === 0) continue; 
             
             var isTotal = String(row[0]).includes('합계');
-            tableHtml += isTotal ? '<tr style="background-color: #f8f9fa; font-weight: bold;">' : '<tr>';
+            // 합계 행에 다크모드 카드 배경색(var(--card-bg)) 적용
+            tableHtml += isTotal ? '<tr style="background-color: var(--card-bg); font-weight: bold;">' : '<tr>';
             
             for (var j = 0; j < headers.length; j++) {
                 var cellData = row[j] !== undefined ? row[j] : '';
@@ -511,11 +532,11 @@
                 datasets: [
                     {
                         type: 'bar', label: '결제자 수 (명)', data: buyerData,
-                        backgroundColor: 'rgba(95, 0, 255, 0.7)', borderColor: '#5f00ff', borderWidth: 1, yAxisID: 'y'
+                        backgroundColor: 'rgba(139, 92, 246, 0.7)', borderColor: '#8b5cf6', borderWidth: 1, yAxisID: 'y'
                     },
                     {
                         type: 'line', label: '결제율 (%)', data: rateData,
-                        borderColor: '#ff4d4f', backgroundColor: '#ff4d4f', borderWidth: 2, tension: 0.1, yAxisID: 'y1'
+                        borderColor: '#f87171', backgroundColor: '#f87171', borderWidth: 2, tension: 0.1, yAxisID: 'y1'
                     }
                 ]
             },
@@ -555,8 +576,8 @@
             data: {
                 labels: labels,
                 datasets: [
-                    { type: 'bar', label: '결제자 수 (명)', data: buyerData, backgroundColor: 'rgba(95, 0, 255, 0.7)', yAxisID: 'y' },
-                    { type: 'line', label: '결제율 (%)', data: rateData, borderColor: '#ff4d4f', yAxisID: 'y1' }
+                    { type: 'bar', label: '결제자 수 (명)', data: buyerData, backgroundColor: 'rgba(139, 92, 246, 0.7)', borderColor: '#8b5cf6', borderWidth: 1, yAxisID: 'y' },
+                    { type: 'line', label: '결제율 (%)', data: rateData, borderColor: '#f87171', backgroundColor: '#f87171', borderWidth: 2, yAxisID: 'y1' }
                 ]
             },
             options: {
