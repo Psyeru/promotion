@@ -387,8 +387,8 @@
     Chart.defaults.color = '#9ca3af';
     Chart.defaults.borderColor = '#374151';
 
-    // ▼▼▼ 아래 따옴표 안에 구글 스프레드시트 CSV 링크를 넣어주세요 ▼▼▼
-    const GOOGLESHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFdyOe8ZFKG99p8kHBpvd1YyysrGLp7scIX6x9D9DyeihaXpkB_Ovx2nFuL9NCBH_jGNVaaFDIjrnE/pub?gid=0&single=true&output=csv"; 
+    // ▼▼▼ 알려주신 구글 스프레드시트 CSV 링크를 적용했습니다 ▼▼▼
+    const GOOGLESHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4yx3FnyZ4iQ1u5hAKgZowweDPe0LzCfWoD1foemOajbXsZUznGG4v2PwqLCwGAnX56Ali6F2Ertfv/pub?gid=0&single=true&output=csv"; 
 
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -435,11 +435,11 @@
         }
     }
 
-    // 날짜 파싱 헬퍼 함수
+    // 날짜 파싱 헬퍼 함수 (안전장치 강화)
     function parseDateSafe(cellData) {
         if (cellData instanceof Date) return cellData;
-        if (typeof cellData === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(cellData)) {
-            return new Date(cellData);
+        if (typeof cellData === 'string' && /^\d{4}[-./]\d{2}[-./]\d{2}$/.test(cellData)) {
+            return new Date(cellData.replace(/[./]/g, '-'));
         }
         return null;
     }
@@ -566,9 +566,12 @@
     }
 
     function initSampleData() {
-        const labels = ['2.9', '2.10', '2.11', '2.12'];
-        const buyerData = [2, 6, 1, 26];
-        const rateData = [0.00, 0.01, 0.00, 0.05];
+        const labels = [
+            '2.12', '2.13', '2.14', '2.15', '2.16', '2.17', '2.18', '2.19', '2.20', '2.21', 
+            '2.22', '2.23', '2.24', '2.25', '2.26', '2.27', '2.28', '3.1', '3.2', '3.3'
+        ];
+        const buyerData = [2, 6, 1, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        const rateData = [0.00, 0.01, 0.00, 0.05, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00];
         
         const ctx = document.getElementById('resultChart').getContext('2d');
         myChart = new Chart(ctx, {
@@ -591,10 +594,26 @@
 
         let sampleData = [
             ['날짜', '총 대상자', '결제자', '남은 결제자', '결제율'],
-            ['2월 9일', 49327, 2, 49325, 0.00],
-            ['2월 10일', 49331, 6, 49325, 0.01],
-            ['2월 11일', 49326, 1, 49325, 0.00],
-            ['2월 12일', 49351, 26, 49325, 0.05],
+            ['2월 12일', 49327, 2, 49325, 0.00],
+            ['2월 13일', 49331, 6, 49325, 0.01],
+            ['2월 14일', 49326, 1, 49325, 0.00],
+            ['2월 15일', 49351, 26, 49325, 0.05],
+            ['2월 16일', 49351, 0, 49351, 0.00],
+            ['2월 17일', 49351, 0, 49351, 0.00],
+            ['2월 18일', 49351, 0, 49351, 0.00],
+            ['2월 19일', 49351, 0, 49351, 0.00],
+            ['2월 20일', 49351, 0, 49351, 0.00],
+            ['2월 21일', 49351, 0, 49351, 0.00],
+            ['2월 22일', 49351, 0, 49351, 0.00],
+            ['2월 23일', 49351, 0, 49351, 0.00],
+            ['2월 24일', 49351, 0, 49351, 0.00],
+            ['2월 25일', 49351, 0, 49351, 0.00],
+            ['2월 26일', 49351, 0, 49351, 0.00],
+            ['2월 27일', 49351, 0, 49351, 0.00],
+            ['2월 28일', 49351, 0, 49351, 0.00],
+            ['3월 1일', 49351, 0, 49351, 0.00],
+            ['3월 2일', 49351, 0, 49351, 0.00],
+            ['3월 3일', 49351, 0, 49351, 0.00],
             ['합계', 49360, 35, 49325, 0.07]
         ];
         renderTable(sampleData);
